@@ -1,0 +1,16 @@
+# Local Matcha configuration and user data
+rivals_config.lua
+prism_*_settings.json
+prism_*_backup.lua
+prism_*_backup.txt
+prism_*_favorites.txt
+prism_*_recent.txt
+prism_*_selection_queue.txt
+
+# Credentials and local workspaces
+.env
+.env.*
+*.key
+*.pem
+workspace/
+backups/

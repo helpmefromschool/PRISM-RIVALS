@@ -1,39 +1,49 @@
 # PRISM | RIVALS
 
-A community-made local cosmetic menu for Roblox RIVALS, designed for normal Matcha. Contains the V5.16 inventory-style GUI and its cosmetic selection, queue and local configuration features.
+An unofficial, community-made **local cosmetic menu** for Roblox RIVALS, designed for a compatible Matcha environment.
 
-## Publishing to GitHub
+## Latest release — V5.17.1 (pre-release)
 
-1. At github.com, create a **public** repository named `PRISM-RIVALS` (or your preferred name).
-2. Choose **Add file → Upload files** and upload `PRISM.lua` from this package. Upload this `README.md` too if desired.
-3. Commit the files on the `main` branch.
-4. Replace `YOUR_GITHUB_USERNAME` in the command below with your real GitHub username. If you picked another repository name, replace `PRISM-RIVALS` too.
-5. Share this one-line script with people using a compatible Matcha setup:
+**[Download PRISM V5.17.1 Protected Release (.zip)](https://github.com/helpmefromschool/PRISM-RIVALS/releases/download/v5.17.1/PRISM_V5_17_1_Protected_Release.zip)**
 
-```lua
-loadstring(httpget("https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/PRISM-RIVALS/main/PRISM.lua"))()
+[View the release](https://github.com/helpmefromschool/PRISM-RIVALS/releases/tag/v5.17.1) · [Verify your download](releases/v5.17.1/VERIFY.md)
+
+Download the specifically named **Protected Release ZIP** under **Assets**. Extract and review its README before using it. The packaged `PRISM.lua` is the V5.17.1 minified build that the project owner tested; it is **not** the same as the `PRISM.lua` currently at the root of this repository.
+
+> **Important:** `main/PRISM.lua` and GitHub's automatic **Source code (zip/tar.gz)** downloads still contain the older **V5.16** version. They are **not** the V5.17.1 protected release.
+
+### What was tested
+
+The project owner reported that V5.17.1 opened correctly, allowed cosmetic selections, completed Apply All, kept menu navigation responsive afterward, closed and reopened with Right Shift, and showed no new errors during that test. This does not guarantee compatibility with every game or software update.
+
+### Verify the official file
+
+GitHub reports the uploaded release ZIP SHA-256 as:
+
+```text
+A6E15142DFBC4A1DD2F2B3742BD24D4F8D103E21107183C393D848410B69F200
 ```
 
-If your Matcha environment lacks `httpget` but has `game:HttpGet`:
+The `PRISM.lua` inside the tested protected ZIP has SHA-256:
 
-```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR_GITHUB_USERNAME/PRISM-RIVALS/main/PRISM.lua"))()
+```text
+AF97947EC3967D3C5BE1EABAA4525703CF8ED3D4EB028961D7BAD37E4CBFFFC4
 ```
 
-**Important:** This script is not on GitHub until you upload it; the placeholders are not working links. Test the raw link in your browser first (it should display Lua source, not a GitHub web page or 404).
+See [verification steps](releases/v5.17.1/VERIFY.md). Checksums help detect files that differ from the official upload; they are **not** encryption, copy prevention, or a guarantee that code is safe.
 
-## Updating without changing the shared link
+## Project notes
 
-Replace the contents of the **same** `PRISM.lua` file on the `main` branch. Everyone using the same one-line loader gets the newer code the next time they execute it. Consider keeping versioned backups and reviewing changes before publishing.
+- Cosmetic changes and preferences are local to the user. PRISM does **not** grant ownership of paid cosmetics or Roblox account entitlements.
+- The default PRISM menu toggle is **Right Shift**.
+- Applying cosmetics invokes an independent third-party RIVALS skin engine by **Martini**. See [RivalsSkinChangerFULLMATCHA](https://github.com/Martinikaws/RivalsSkinChangerFULLMATCHA); PRISM does not claim ownership of that work.
+- Third-party scripts can carry security risks and may violate Roblox or individual game rules. Use discretion and review downloaded code.
+- This is an unofficial community project, not affiliated with Roblox or the RIVALS developers.
 
-## What not to upload
+## For maintainers
 
-Do **not** upload your `rivals_config.lua`, cached game files, local profile/favorites data, access tokens, or any files from your personal Matcha workspace. Only upload `PRISM.lua` and optional public documentation.
-
-## Notes
-
-- Runs client-side; saved options are local to each person's Matcha workspace. They do not grant Roblox account ownership of cosmetics.
-- Press **Right Shift** for the default PRISM menu toggle.
-- Skin application invokes Martini's separate third-party RIVALS skin engine from GitHub when the user explicitly applies changes. Review external code before running it.
-- Modifying multiplayer games using third-party scripts may violate game/platform rules and can be risky. This is an unofficial community project.
-- This package keeps the existing PRISM application logic; no account-unlock bypass is included.
+- Keep readable development source in a **separate private repository**. Do not commit it to this public repository.
+- Publish tested versioned artifacts under **Releases**. Verify the contents and SHA-256 before sharing a new version.
+- Do not upload `rivals_config.lua`, cached data, player settings, private Matcha workspace files, access tokens, credentials or secrets.
+- The public legacy V5.16 source remains visible in GitHub history and may already have been downloaded; future source should be treated as separate.
+- Minification raises the effort of casual copying but does not prevent skilled reverse engineering.

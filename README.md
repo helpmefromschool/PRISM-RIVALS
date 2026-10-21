@@ -2,7 +2,19 @@
 
 An unofficial, community-made **local cosmetic menu** for Roblox RIVALS, designed for a compatible Matcha environment.
 
-## Latest release — V5.17.1 (pre-release)
+## Current direct-load build — V5.17.2
+
+The existing PRISM command now loads **V5.17.2**. Copy this exact line into the compatible Matcha script editor:
+
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/helpmefromschool/PRISM-RIVALS/main/releases/v5.17.1/PRISM.lua"))()
+```
+
+The original loader URL is preserved for existing users even though its directory name contains `v5.17.1`. The version-specific source is also available at [releases/v5.17.2/PRISM.lua](releases/v5.17.2/PRISM.lua).
+
+**V5.17.2 changes:** attempts to create `rivals_config.lua` only when safely confirmed missing, saves clicked cosmetic selections to that file, reports save failures, and improves the hitboxes for weapon categories, weapon items, and skin cards. **Apply All** still applies the saved choices. This version has been code-reviewed but has not been independently live-tested after the final weapon-click adjustment.
+
+## Previous packaged release — V5.17.1 (pre-release)
 
 **[Download PRISM V5.17.1 Protected Release (.zip)](https://github.com/helpmefromschool/PRISM-RIVALS/releases/download/v5.17.1/PRISM_V5_17_1_Protected_Release.zip)**
 

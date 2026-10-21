@@ -1,4 +1,4 @@
-# ATELIER COSMETICS v0.3 (Original Local Cosmetic Prototype)
+# ATELIER COSMETICS v0.4 (Original Local Cosmetic Prototype)
 
 An original **client-side** Roblox cosmetic-finish preview and local recoloring system. This project is *not* Yabujin and contains no copied Yabujin source.
 
@@ -18,6 +18,19 @@ An original **client-side** Roblox cosmetic-finish preview and local recoloring 
 4. Press Play, equip **ATELIER Test Tool**, and select a finish. Click **APPLY FINISH**.
 5. Click **UNLOCK ALL (LOCAL)** to reveal the rest of the original finish previews. Use **RESET** to restore original materials and color.
 6. Inspect Output for any warnings. UI right shift opens/closes.
+
+
+## Native Roblox RIVALS cosmetic UI padlock visual test (v0.4)
+
+This experimental **local UI-only** tool hides repeated padlock *images* in the actual in-game PlayerGui. **It does not** make locked game cosmetics selectable, grant real inventory ownership, activate finishers, or change server state. If the game draws a lock as part of a single texture or checks ownership before allowing selection, this feature cannot bypass that.
+
+1. Open ATELIER with Right Shift.
+2. Press **PICK GAME PADLOCK**. The ATELIER window will hide.
+3. Open RIVALS's cosmetic collection, move your cursor over the **center of a visible padlock**, and press **L** (do not click the locked item).
+4. Open ATELIER again with Right Shift. The status line reports how many matching lock GUI badges were hidden. **HIDE LOCKS: ON/OFF** toggles the effect.
+5. Closing/destroying ATELIER attempts to restore any GUI visibility properties it changed. Other UI elements aren't deliberately changed.
+
+Implementation: PlayerGui:GetGuiObjectsAtPosition identifies a distinct small ImageLabel/ImageButton or labeled lock object under the mouse. Subsequent matching UI objects are hidden locally, including newly loaded badges. If no suitable object is detected, **no RIVALS UI is modified**. It may not work with every type of lock overlay. Don't treat the result as an actual unlock.
 
 ## GitHub source loader
 

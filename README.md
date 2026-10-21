@@ -2,17 +2,21 @@
 
 An unofficial, community-made **local cosmetic menu** for Roblox RIVALS, designed for a compatible Matcha environment.
 
-## Current direct-load build — V5.17.2
+## Current direct-load build — V5.17.3
 
-The existing PRISM command now loads **V5.17.2**. Copy this exact line into the compatible Matcha script editor:
+The existing PRISM loader URL now points to **V5.17.3**. No new execution command is required:
 
 ```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/helpmefromschool/PRISM-RIVALS/main/releases/v5.17.1/PRISM.lua"))()
 ```
 
-The original loader URL is preserved for existing users even though its directory name contains `v5.17.1`. The version-specific source is also available at [releases/v5.17.2/PRISM.lua](releases/v5.17.2/PRISM.lua).
+The older `v5.17.1` directory name is intentionally kept for compatibility with users who already saved this loader. The actual V5.17.3 source has its own versioned path at [releases/v5.17.3/PRISM.lua](releases/v5.17.3/PRISM.lua).
 
-**V5.17.2 changes:** attempts to create `rivals_config.lua` only when safely confirmed missing, saves clicked cosmetic selections to that file, reports save failures, and improves the hitboxes for weapon categories, weapon items, and skin cards. **Apply All** still applies the saved choices. This version has been code-reviewed but has not been independently live-tested after the final weapon-click adjustment.
+**V5.17.3 fixes:** directly saves the clicked cosmetic without committing other pending picks; checks for conflicting appearance assignments; retains the existing `rivals_config.lua`, config backups and undo snapshots; runs an optional in-game catalog scan when the game asset folder becomes available; and reports warnings or incomplete results from Martini's external engine rather than implying full success. The previous weapon and skin-card click improvements remain.
+
+**Testing status:** Static/source checks passed; this version still needs a live Matcha/RIVALS playtest. A working skin model does not confirm special sound effects or animation sync. PRISM does not modify Martini's engine internals.
+
+**Rollback:** [releases/v5.17.2/PRISM.lua](releases/v5.17.2/PRISM.lua) remains unchanged for direct loading, and the original V5.17.1 protected ZIP is still available.
 
 ## Previous packaged release — V5.17.1 (pre-release)
 

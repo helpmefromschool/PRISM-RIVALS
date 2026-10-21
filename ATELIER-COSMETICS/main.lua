@@ -1,4 +1,4 @@
--- ATELIER COSMETICS v0.2
+-- ATELIER COSMETICS v0.3
 -- Original client-side cosmetic finish changer; model compatibility varies.
 -- Changes only local appearance of your equipped Tool or a matching Camera model.
 -- Does NOT unlock cosmetics, change ownership, or replicate to other players.
@@ -49,13 +49,20 @@ for _, item in ipairs(catalog) do
     })[item.id]
     item.reflectance = (item.id == "amber" or item.id == "pearl") and 0.12 or 0.02
 end
+-- Unlock All is deliberately scoped to the 12 ORIGINAL ATELIER finishes.
+-- It does not claim ownership of skins in RIVALS or any other game.
+local starterFinishes = {slate = true, aqua = true, lime = true, matte = true}
+local unlockAllLocal = false
+local function isAvailable(item)
+    return unlockAllLocal or starterFinishes[item.id] == true
+end
 local selected = catalog[1]
 local activeGroup = "All"
 local searchTerm = ""
 local opened = true
 local connections = {}
 
--- ATELIER appearance engine v0.2
+-- ATELIER appearance engine v0.3
 -- Inlined into main.lua on release. Own-character / own-camera local cosmetics only.
 local appearance = {
     applied = {}, -- [BasePart] = original snapshot
@@ -272,7 +279,7 @@ corner(header,8)
 make("Frame", {Size=UDim2.new(1,0,0,8), Position=UDim2.new(0,0,1,-8), BackgroundColor3=palette.side, BorderSizePixel=0}, header)
 local wordmark = label(header, "ATELIER", 20, palette.text, true)
 wordmark.Position=UDim2.fromOffset(23,13); wordmark.Size=UDim2.fromOffset(220,24)
-local subtitle = label(header, "C O S M E T I C   L A B  /  0.2", 9, palette.muted)
+local subtitle = label(header, "C O S M E T I C   L A B  /  0.3", 9, palette.muted)
 subtitle.Position=UDim2.fromOffset(24,38); subtitle.Size=UDim2.fromOffset(250,14)
 local exit = button(header, "×", palette.pane, palette.muted)
 exit.Position=UDim2.new(1,-49,0,16); exit.Size=UDim2.fromOffset(31,31)
@@ -288,6 +295,12 @@ for index, group in ipairs({"All","Finishes","Accents","Textures"}) do
     b.Text="    "..group
     nav[group]=b
 end
+local unlockButton = button(sidebar, "UNLOCK ALL (LOCAL)", palette.card, palette.text)
+unlockButton.Position = UDim2.fromOffset(13, 248)
+unlockButton.Size = UDim2.fromOffset(145, 37)
+line(unlockButton)
+local unlockNote=label(sidebar,"4 / 12 finishes available",10,palette.muted)
+unlockNote.Position=UDim2.fromOffset(19,294); unlockNote.Size=UDim2.fromOffset(145,24)
 local demo=label(sidebar,"LOCAL VISUALS ONLY\nNo inventory unlocks",10,palette.muted)
 demo.Position=UDim2.new(0,20,1,-67); demo.Size=UDim2.fromOffset(145,40)
 demo.TextYAlignment=Enum.TextYAlignment.Top
@@ -355,6 +368,11 @@ local function refreshNav()
     end
 end
 local function selectItem(item)
+    if not isAvailable(item) then
+        status.Text = "FINISH LOCKED IN DEMO - CLICK UNLOCK ALL (LOCAL)"
+        status.TextColor3 = palette.muted
+        return
+    end
     selected=item
     pvName.Text=item.name
     pvTier.Text=item.tier.."  /  "..string.upper(item.group)
@@ -369,21 +387,40 @@ local function refreshCards()
     for _,item in ipairs(catalog) do
         if (activeGroup=="All" or item.group==activeGroup) and (searchTerm=="" or string.find(string.lower(item.name),searchTerm,1,true)) then
             count+=1
+            local locked = not isAvailable(item)
             local card=button(scroll,"",palette.card,palette.text)
             card.LayoutOrder=count
             card.Text=""
             line(card)
             local sample=make("Frame",{Position=UDim2.fromOffset(10,11),Size=UDim2.fromOffset(49,62),BackgroundColor3=item.color,BorderSizePixel=0},card)
             corner(sample,5)
-            local name=label(card,item.name,11,palette.text,true)
+            if locked then
+                sample.BackgroundTransparency = .64
+            end
+            local name=label(card,item.name,11,locked and palette.muted or palette.text,true)
             name.Position=UDim2.fromOffset(68,17);name.Size=UDim2.fromOffset(88,28);name.TextWrapped=true
             local tier=label(card,item.tier,9,palette.muted)
-            tier.Position=UDim2.fromOffset(68,52);tier.Size=UDim2.fromOffset(88,15)
+            tier.Text = locked and "LOCKED / " .. item.tier or item.tier
+            tier.Position=UDim2.fromOffset(68,52);tier.Size=UDim2.fromOffset(96,15)
             card.MouseButton1Click:Connect(function() selectItem(item) end)
         end
     end
     browseTitle.Text=string.upper(activeGroup).."  /  "..count
 end
+unlockButton.MouseButton1Click:Connect(function()
+    if unlockAllLocal then
+        status.Text = "ALL 12 ATELIER FINISHES ALREADY AVAILABLE (LOCAL)"
+        return
+    end
+    unlockAllLocal = true
+    unlockButton.Text = "ALL FINISHES AVAILABLE"
+    unlockButton.BackgroundColor3 = Color3.fromRGB(42, 78, 65)
+    unlockButton.TextColor3 = Color3.fromRGB(216, 249, 232)
+    unlockNote.Text = tostring(#catalog) .. " / " .. tostring(#catalog) .. " finishes available"
+    status.Text = "UNLOCKED ALL LOCAL FINISH PREVIEWS - NO ACCOUNT CHANGES"
+    status.TextColor3 = palette.muted
+    refreshCards()
+end)
 for group,b in pairs(nav) do
     b.MouseButton1Click:Connect(function() activeGroup=group;refreshNav();refreshCards() end)
 end
@@ -398,6 +435,10 @@ local function showStatus(message)
     status.TextColor3 = palette.muted
 end
 apply.MouseButton1Click:Connect(function()
+    if not isAvailable(selected) then
+        showStatus("Selected finish is locked in this demo")
+        return
+    end
     local ok, result = applyNow(selected)
     activeFinish = ok and selected or nil
     if ok then rememberTargets() end
@@ -493,4 +534,4 @@ end)
 refreshNav()
 refreshCards()
 selectItem(selected)
-print("ATELIER v0.2 loaded: local finish changer ready. Equip a Tool, then Apply Finish. Right Shift toggles the panel.")
+print("ATELIER v0.3 loaded: local finish changer ready. Equip a Tool, then Apply Finish. Right Shift toggles the panel.")

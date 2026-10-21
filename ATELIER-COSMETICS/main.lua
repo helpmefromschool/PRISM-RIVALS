@@ -1,4 +1,4 @@
--- ATELIER COSMETICS v0.4
+-- ATELIER COSMETICS v0.5
 -- Original client-side cosmetic finish changer; model compatibility varies.
 -- Changes only local appearance of your equipped Tool or a matching Camera model.
 -- Does NOT unlock cosmetics, change ownership, or replicate to other players.
@@ -62,7 +62,7 @@ local searchTerm = ""
 local opened = true
 local connections = {}
 
--- ATELIER appearance engine v0.4
+-- ATELIER appearance engine v0.5
 -- Inlined into main.lua on release. Own-character / own-camera local cosmetics only.
 local appearance = {
     applied = {}, -- [BasePart] = original snapshot
@@ -279,7 +279,7 @@ corner(header,8)
 make("Frame", {Size=UDim2.new(1,0,0,8), Position=UDim2.new(0,0,1,-8), BackgroundColor3=palette.side, BorderSizePixel=0}, header)
 local wordmark = label(header, "ATELIER", 20, palette.text, true)
 wordmark.Position=UDim2.fromOffset(23,13); wordmark.Size=UDim2.fromOffset(220,24)
-local subtitle = label(header, "C O S M E T I C   L A B  /  0.4", 9, palette.muted)
+local subtitle = label(header, "C O S M E T I C   L A B  /  0.5", 9, palette.muted)
 subtitle.Position=UDim2.fromOffset(24,38); subtitle.Size=UDim2.fromOffset(250,14)
 local exit = button(header, "×", palette.pane, palette.muted)
 exit.Position=UDim2.new(1,-49,0,16); exit.Size=UDim2.fromOffset(31,31)
@@ -295,13 +295,14 @@ for index, group in ipairs({"All","Finishes","Accents","Textures"}) do
     b.Text="    "..group
     nav[group]=b
 end
-local unlockButton = button(sidebar, "UNLOCK ALL (LOCAL)", palette.card, palette.text)
+local unlockNativeVisuals
+local unlockButton = button(sidebar, "UNLOCK ALL", palette.card, palette.text)
 unlockButton.Position = UDim2.fromOffset(13, 248)
 unlockButton.Size = UDim2.fromOffset(145, 37)
 line(unlockButton)
 local unlockNote=label(sidebar,"4 / 12 finishes available",10,palette.muted)
 unlockNote.Position=UDim2.fromOffset(19,294); unlockNote.Size=UDim2.fromOffset(145,24)
-local pickNativeLock = button(sidebar, "PICK GAME PADLOCK", palette.card, palette.text)
+local pickNativeLock = button(sidebar, "LEARN PADLOCK", palette.card, palette.text)
 pickNativeLock.Position = UDim2.fromOffset(13, 327)
 pickNativeLock.Size = UDim2.fromOffset(145, 34)
 line(pickNativeLock)
@@ -416,18 +417,22 @@ local function refreshCards()
     browseTitle.Text=string.upper(activeGroup).."  /  "..count
 end
 unlockButton.MouseButton1Click:Connect(function()
-    if unlockAllLocal then
-        status.Text = "ALL 12 ATELIER FINISHES ALREADY AVAILABLE (LOCAL)"
-        return
+    unlockAllLocal=true
+    unlockButton.BackgroundColor3=Color3.fromRGB(42,78,65)
+    unlockNote.Text=tostring(#catalog).." / "..tostring(#catalog).." original finishes"
+    local count=0
+    if type(unlockNativeVisuals)=="function" then
+        local ok,result=pcall(unlockNativeVisuals)
+        if ok then count=result else warn("[ATELIER] UI scan error:",result) end
     end
-    unlockAllLocal = true
-    unlockButton.Text = "ALL FINISHES AVAILABLE"
-    unlockButton.BackgroundColor3 = Color3.fromRGB(42, 78, 65)
-    unlockButton.TextColor3 = Color3.fromRGB(216, 249, 232)
-    unlockNote.Text = tostring(#catalog) .. " / " .. tostring(#catalog) .. " finishes available"
-    status.Text = "UNLOCKED ALL LOCAL FINISH PREVIEWS - NO ACCOUNT CHANGES"
-    status.TextColor3 = palette.muted
+    if count>0 then
+        status.Text=("HID %d GAME PADLOCK GRAPHIC(S); NOT AN ACTUAL UNLOCK."):format(count)
+    else
+        status.Text="PREVIEWS READY; NO DISTINCT GAME PADLOCKS DETECTED."
+    end
+    status.TextColor3=palette.muted
     refreshCards()
+    print(("[ATELIER] Local Unlock All preview: %d UI lock graphics hidden; ownership and game selections unchanged."):format(count))
 end)
 for group,b in pairs(nav) do
     b.MouseButton1Click:Connect(function() activeGroup=group;refreshNav();refreshCards() end)
@@ -447,14 +452,35 @@ end
 -- Does not modify inventory, purchase logic, button activation, assets or server state.
 local GuiService = game:GetService("GuiService")
 local nativeLocks = {
-    picking=false, enabled=false, stopped=false,
+    picking=false, enabled=false, stopped=false, autoMatch=false,
     pattern=nil, originals=setmetatable({}, {__mode="k"}),
 }
+local function recognizableLock(obj)
+    if not obj or not obj.Parent or not obj:IsA("GuiObject") or obj:IsDescendantOf(gui) then return false end
+    if not (obj:IsA("ImageLabel") or obj:IsA("ImageButton")
+        or obj:IsA("TextLabel") or obj:IsA("TextButton")) then return false end
+    local sz=obj.AbsoluteSize
+    if sz.X<8 or sz.Y<8 or sz.X>150 or sz.Y>150 then return false end
+    local n=string.lower(obj.Name)
+    local lockNames={lock=true,locked=true,padlock=true,lockicon=true,
+        lockedicon=true,lockimage=true,lockoverlay=true,lockedoverlay=true,
+        locklabel=true,lockedlabel=true,locksymbol=true}
+    if lockNames[n] then return true end
+    if obj:IsA("TextLabel") or obj:IsA("TextButton") then
+        local t=obj.Text or ""
+        return t=="🔒" or t=="🔐" or string.lower(t)=="locked"
+    end
+    return false
+end
+
 local function matchingNativeBadge(obj)
-    if not nativeLocks.pattern or not obj or not obj.Parent or obj:IsDescendantOf(gui) then return false end
+    if not obj or not obj.Parent or obj:IsDescendantOf(gui) then return false end
+    if nativeLocks.autoMatch and recognizableLock(obj) then return true end
+    if not nativeLocks.pattern then return false end
     local pattern=nativeLocks.pattern
     if pattern.kind=="image" then
         return (obj:IsA("ImageLabel") or obj:IsA("ImageButton")) and obj.Image==pattern.value
+            and obj.ImageRectOffset==pattern.rectOffset and obj.ImageRectSize==pattern.rectSize
     end
     if pattern.kind=="text" then
         return (obj:IsA("TextLabel") or obj:IsA("TextButton")) and obj.Text==pattern.value
@@ -478,6 +504,13 @@ local function scanNativeBadges()
     end
     return count
 end
+unlockNativeVisuals=function()
+    nativeLocks.enabled=true
+    nativeLocks.autoMatch=true
+    local changed=scanNativeBadges()
+    toggleNativeLocks.Text="HIDE LOCKS: ON"
+    return changed
+end
 local function restoreNativeBadges()
     for obj,wasVisible in pairs(nativeLocks.originals) do
         if obj and obj.Parent then pcall(function() obj.Visible=wasVisible end) end
@@ -499,7 +532,7 @@ local function describeCandidate(obj)
         if not obj.Image or obj.Image=="" then return nil end
         if not namedLock and not parentLarge then return nil end
         if childWidth>160 or childHeight>160 then return nil end
-        return {kind="image",value=obj.Image,score=(namedLock and 1000 or 0)
+        return {kind="image",value=obj.Image,rectOffset=obj.ImageRectOffset,rectSize=obj.ImageRectSize,score=(namedLock and 1000 or 0)
             + (obj:IsA("ImageLabel") and 40 or 0) + 140/(1+childWidth*childHeight/800)}
     end
     if (obj:IsA("TextLabel") or obj:IsA("TextButton")) and obj.Text then
@@ -566,8 +599,8 @@ table.insert(connections,UIS.InputBegan:Connect(function(input,processed)
     print(("[ATELIER] Hiding matching native UI lock badges: %d found. Selection and ownership are unchanged."):format(count))
 end))
 toggleNativeLocks.MouseButton1Click:Connect(function()
-    if not nativeLocks.pattern then
-        showStatus("PICK GAME PADLOCK FIRST, THEN HOVER AND PRESS L.")
+    if not nativeLocks.pattern and not nativeLocks.autoMatch then
+        showStatus("PRESS UNLOCK ALL OR LEARN A PADLOCK FIRST.")
         return
     end
     nativeLocks.enabled=not nativeLocks.enabled
@@ -696,4 +729,4 @@ end)
 refreshNav()
 refreshCards()
 selectItem(selected)
-print("ATELIER v0.4 loaded: local finish changer ready. Equip a Tool, then Apply Finish. Right Shift toggles the panel.")
+print("ATELIER v0.5 loaded: local finish changer ready. Equip a Tool, then Apply Finish. Right Shift toggles the panel.")

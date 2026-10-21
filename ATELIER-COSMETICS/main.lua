@@ -296,6 +296,7 @@ for index, group in ipairs({"All","Finishes","Accents","Textures"}) do
     nav[group]=b
 end
 local unlockNativeVisuals
+local inspectNativeGui
 local unlockButton = button(sidebar, "UNLOCK ALL", palette.card, palette.text)
 unlockButton.Position = UDim2.fromOffset(13, 248)
 unlockButton.Size = UDim2.fromOffset(145, 37)
@@ -428,7 +429,8 @@ unlockButton.MouseButton1Click:Connect(function()
     if count>0 then
         status.Text=("HID %d GAME PADLOCK GRAPHIC(S); NOT AN ACTUAL UNLOCK."):format(count)
     else
-        status.Text="PREVIEWS READY; NO DISTINCT GAME PADLOCKS DETECTED."
+        status.Text="NO PADLOCKS FOUND. CHECK [ATELIER] LOG FOR IMAGE GROUPS."
+        if type(inspectNativeGui)=="function" then pcall(inspectNativeGui) end
     end
     status.TextColor3=palette.muted
     refreshCards()
@@ -504,6 +506,41 @@ local function scanNativeBadges()
     end
     return count
 end
+inspectNativeGui=function()
+    -- Diagnostic only: collect repeated small game GUI image identifiers.
+    -- No hidden game state or account information is accessed or changed.
+    local grouped={}
+    for _,obj in ipairs(playerGui:GetDescendants()) do
+        if (obj:IsA("ImageLabel") or obj:IsA("ImageButton"))
+            and obj.Visible and not obj:IsDescendantOf(gui) and obj.Image~="" then
+            local sz=obj.AbsoluteSize
+            if sz.X>=12 and sz.Y>=12 and sz.X<=160 and sz.Y<=160 then
+                local key=obj.Image.."|"..tostring(obj.ImageRectOffset).."|"..tostring(obj.ImageRectSize)
+                local item=grouped[key]
+                if not item then
+                    item={count=0,image=obj.Image,example=obj.Name}
+                    grouped[key]=item
+                end
+                item.count+=1
+                if string.find(string.lower(obj.Name),"lock",1,true) then item.example=obj.Name end
+            end
+        end
+    end
+    local rows={}
+    for _,entry in pairs(grouped) do
+        if entry.count>=2 or string.find(string.lower(entry.example),"lock",1,true) then
+            table.insert(rows,entry)
+        end
+    end
+    table.sort(rows,function(a,b) return a.count>b.count end)
+    print("[ATELIER] Locked UI diagnostics: "..#rows.." repeated image groups (top 12 shown).")
+    for i=1,math.min(12,#rows) do
+        local a=rows[i]
+        print(("[ATELIER] IMAGE GROUP %d | count=%d | name=%s | image=%s"):format(
+            i,a.count,a.example,a.image))
+    end
+end
+
 unlockNativeVisuals=function()
     nativeLocks.enabled=true
     nativeLocks.autoMatch=true

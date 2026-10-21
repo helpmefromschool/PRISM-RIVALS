@@ -1,38 +1,37 @@
-# ATELIER COSMETICS v0.2 — Local finish changer
+# ATELIER COSMETICS v0.3 (Original Local Cosmetic Prototype)
 
-A standalone **original** Roblox client-side cosmetic **finish changer**. This is a new project, separate from PRISM; it does not include protected Yabujin code.
+An original **client-side** Roblox cosmetic-finish preview and local recoloring system. This project is *not* Yabujin and contains no copied Yabujin source.
 
-## What this first functional build does
+## Scope
 
-- Changes the visible color/material/reflectance of compatible `BasePart` and `MeshPart` objects on your **locally equipped Tool**, or on a matching local `CurrentCamera` viewmodel.
-- Temporarily hides existing mesh textures and SurfaceAppearance from those target parts while showing the selected original finish.
-- Has 12 original finishes, searchable cards, tabs, a preview, a target-mode selector, Reset, and Find Models diagnostic.
-- Automatically reapplies chosen finish after a compatible target model changes, once per second. Right Shift toggles the menu.
-- Snapshots and restores original appearance of changed parts using Reset, or when the menu script is destroyed/reloaded.
-- Only changes *client-side presentation*. No permanent item unlocks, purchase requests, server modifications, or affecting other players.
+- `main.lua` offers a searchable catalog of **12 original ATELIER finishes**, previews, a **UNLOCK ALL (LOCAL)** option, Apply/Reset, target detection, and a Right Shift GUI toggle.
+- **Unlock All (Local)** makes all 12 ATELIER catalog finishes available within this running client session. Four starter finishes are available before pressing it. Everything is free; this is a demonstration of selection, not purchased or game-owned unlocks.
+- **It cannot unlock RIVALS items on your account**, send ownership changes to the server, create legitimate weapon skins, or make other players see cosmetic changes.
+- Applying a finish attempts to locally recolor BaseParts within your *own* equipped Tool or matching camera model. Not all games use compatible models, and Roblox games may replace their own appearance frequently.
+- `DemoTool.server.lua` creates a simple local test tool in your own Studio place so the appearance engine can be inspected visually without targeting third-party games.
 
-## What it does NOT yet do
+## Recommended Studio test
 
-- These are **original color/material finishes**, not the official skin assets/catalog of any third-party Roblox game. Proper themed skins need their own model/texture assets and game-specific asset mappings.
-- Camera mode requires an equipped tool name matching the camera model/descendant, or a camera model named `Viewmodel`/`View_Model` when no tool is equipped.
-- **Not verified with Roblox RIVALS or Real Executor**. If no compatible tool or camera model is found, the GUI reports that nothing changed. It does not pretend to succeed.
-- Does not bypass anticheat/security controls, hook protected methods, or call remotes.
+1. Open a Roblox place you control in **Roblox Studio**.
+2. Add `main.lua` as a **LocalScript** under `StarterPlayer > StarterPlayerScripts`.
+3. Add `DemoTool.server.lua` as a **Script** under `ServerScriptService`.
+4. Press Play, equip **ATELIER Test Tool**, and select a finish. Click **APPLY FINISH**.
+5. Click **UNLOCK ALL (LOCAL)** to reveal the rest of the original finish previews. Use **RESET** to restore original materials and color.
+6. Inspect Output for any warnings. UI right shift opens/closes.
 
-## Test in your own Roblox Studio experience
+## GitHub source loader
 
-1. Place the contents of `main.lua` in a **LocalScript** under `StarterPlayer > StarterPlayerScripts`.
-2. Place `DemoTool.server.lua` in a **Script** under `ServerScriptService` to spawn an original test Tool.
-3. Play; equip the `ATELIER Test Tool` from your hotbar.
-4. Open the ATELIER GUI, select a finish, click **APPLY FINISH**, then **RESET**. Switch finishes and equip/unequip to test automatic reapply.
-5. Use **FIND MODELS** to see the equipped Tool and camera models in Studio Output.
+If your environment supports `game:HttpGet` and `loadstring`, the one-line launcher is:
 
-## Known limitations
+```lua
+loadstring(game:HttpGet("https://raw.githubusercontent.com/helpmefromschool/PRISM-RIVALS/main/ATELIER-COSMETICS/main.lua"))()
+```
 
-- A proprietary game can recreate its models or override client materials frequently. Those clients may not be compatible.
-- Color/material changes will not reproduce UV-mapped pattern skins; that requires properly licensed textures/model assets, not just recolors.
-- Animation, audio, and game-specific cosmetic effects are not included.
-- The standalone script needs to be run client-side in an environment that supports standard Roblox LocalScript APIs. Executor compatibility is untested.
+This launcher is **not supported by normal Roblox Studio LocalScripts**. Use local script source in Studio instead. Compatibility with any external runtime is untested. Review the public source before running. The repository is user-controlled and code may change on future updates.
 
-## Safety
+## Technical notes
 
-No obfuscated code, external network requests, file-system access, hidden remotes, paid features, or elevated permissions. Public code may be inspected before use.
+- Material changes and mesh texture hiding are reversible via `RESET` while the script remains active.
+- The main script makes no game remotes or server requests.
+- This project has **not been live-playtested in RIVALS or Real Executor**; do not interpret detection messages as proof the visual result was correct.
+- All changes remain on the local client and are subject to game restrictions.
